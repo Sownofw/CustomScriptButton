@@ -53,7 +53,6 @@ local function setupLoaderGui()
     local folderPath = "customscript"
     local files = {}
 
-    -- 커스텀 스크립트 폴더가 없으면 종료
     local success, isFolder = pcall(function() return isfolder(folderPath) end)
     if not success or not isFolder then
         warn("customscript 폴더가 없습니다")
@@ -62,10 +61,9 @@ local function setupLoaderGui()
 
     files = listfiles(folderPath)
 
-    -- 각 파일을 읽어서 버튼 생성
     for _, filepath in ipairs(files) do
         local content = readfile(filepath)
-        -- 저장 형식: 이름|PosX.Scale|PosX.Offset|PosY.Scale|PosY.Offset|스크립트 내용
+        PosX.Scale|PosX.Offset|PosY.Scale|PosY.Offset|스크립트 내용
         local sep1 = content:find("|")
         if not sep1 then continue end
         local name = content:sub(1, sep1 - 1)
@@ -96,7 +94,6 @@ setupLoaderGui()
 nGuiName
     screenGui.Parent = coreUi
 
-    -- 제목 라벨
     local titleLabel = Instance.new("TextLabel", screenGui)
     titleLabel.Text = "커스텀 버튼 생성기"
     titleLabel.Size = UDim2.new(0, 300, 0, 40)
@@ -109,7 +106,6 @@ nGuiName
     titleLabel.TextWrapped = true
     titleLabel.ZIndex = 5
 
-    -- 이름 입력 박스 (버튼 이름)
     local nameLabel = Instance.new("TextLabel", screenGui)
     nameLabel.Text = "버튼 이름"
     nameLabel.Size = UDim2.new(0, 100, 0, 25)
@@ -130,7 +126,6 @@ nGuiName
     nameBox.TextSize = 18
     nameBox.Font = Enum.Font.SourceSans
 
-    -- 스크립트 입력 박스
     local scriptBox = Instance.new("TextBox", screenGui)
     scriptBox.Size = UDim2.new(0, 360, 0, 140)
     scriptBox.Position = UDim2.new(0.5, -180, 0.4, 0)
@@ -155,7 +150,6 @@ nGuiName
     createBtn.TextColor3 = Color3.new(1,1,1)
     createBtn.AutoButtonColor = true
 
-    -- 최종 저장 버튼 (드래그 후 저장)
     local saveBtn = Instance.new("TextButton", screenGui)
     saveBtn.Size = UDim2.new(0, 120, 0, 40)
     saveBtn.Position = UDim2.new(0.5, 15, 0.7, 0)
