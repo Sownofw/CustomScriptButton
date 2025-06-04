@@ -1,0 +1,200 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local gethui = gethui or get_hidden_ui or function() return game:GetService("CoreGui") end
+local coreUi = gethui()
+
+local screenGuiName = "CustomScriptButtonLoader"
+
+local function createButton(screenGui, name, pos, scriptText)
+    local button = Instance.new("ImageButton", screenGui)
+    button.Name = name
+    button.Size = UDim2.new(0, 48, 0, 47)
+    button.Position = pos
+    button.Image = "rbxassetid://6256840888"
+    button.BackgroundTransparency = 1
+    button.ZIndex = 2
+
+    local label = Instance.new("TextLabel", button)
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextSize = 17
+    label.Font = Enum.Font.SourceSans
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.TextWrapped = true
+    label.ZIndex = 3
+
+    button.MouseButton1Click:Connect(function()
+        local success, err = pcall(function()
+            loadstring(scriptText)()
+        end)
+        if not success then
+            warn("스크립트 실행 오류: " .. tostring(err))
+        end
+    end)
+
+    return button
+end
+
+local function setupLoaderGui()
+    local oldGui = coreUi:FindFirstChild(screenGuiName)
+    if oldGui then oldGui:Destroy() end
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = screenGuiName
+    screenGui.Parent = coreUi
+
+    if not listfiles then
+        warn("Executor가 listfiles 기능을 지원하지 않습니다")
+        return
+    end
+
+    local folderPath = "customscript"
+    local files = {}
+
+    -- 커스텀 스크립트 폴더가 없으면 종료
+    local success, isFolder = pcall(function() return isfolder(folderPath) end)
+    if not success or not isFolder then
+        warn("customscript 폴더가 없습니다")
+        return
+    end
+
+    files = listfiles(folderPath)
+
+    -- 각 파일을 읽어서 버튼 생성
+    for _, filepath in ipairs(files) do
+        local content = readfile(filepath)
+        -- 저장 형식: 이름|PosX.Scale|PosX.Offset|PosY.Scale|PosY.Offset|스크립트 내용
+        local sep1 = content:find("|")
+        if not sep1 then continue end
+        local name = content:sub(1, sep1 - 1)
+
+        local parts = {}
+        for part in content:gmatch("[^|]+") do
+            table.insert(parts, part)
+        end
+        if #parts < 6 then continue end
+
+        local posXScale = tonumber(parts[2])
+        local posXOffset = tonumber(parts[3])
+        local posYScale = tonumber(parts[4])
+        local posYOffset = tonumber(parts[5])
+        local scriptText = table.concat(parts, "|", 6)
+
+        if not (posXScale and posXOffset and posYScale and posYOffset) then
+            warn("잘못된 위치 데이터: " .. filepath)
+            continue
+        end
+
+        local pos = UDim2.new(posXScale, posXOffset, posYScale, posYOffset)
+        createButton(screenGui, name, pos, scriptText)
+    end
+end
+
+setupLoaderGui()
+nGuiName
+    screenGui.Parent = coreUi
+
+    -- 제목 라벨
+    local titleLabel = Instance.new("TextLabel", screenGui)
+    titleLabel.Text = "커스텀 버튼 생성기"
+    titleLabel.Size = UDim2.new(0, 300, 0, 40)
+    titleLabel.Position = UDim2.new(0.5, -150, 0.15, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.TextColor3 = Color3.new(1, 1, 1)
+    titleLabel.TextSize = 24
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.TextStrokeTransparency = 0.7
+    titleLabel.TextWrapped = true
+    titleLabel.ZIndex = 5
+
+    -- 이름 입력 박스 (버튼 이름)
+    local nameLabel = Instance.new("TextLabel", screenGui)
+    nameLabel.Text = "버튼 이름"
+    nameLabel.Size = UDim2.new(0, 100, 0, 25)
+    nameLabel.Position = UDim2.new(0.5, -150, 0.3, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.new(1,1,1)
+    nameLabel.TextSize = 18
+    nameLabel.Font = Enum.Font.SourceSansBold
+    nameLabel.TextStrokeTransparency = 0.7
+    nameLabel.TextWrapped = true
+
+    local nameBox = Instance.new("TextBox", screenGui)
+    nameBox.Size = UDim2.new(0, 300, 0, 30)
+    nameBox.Position = UDim2.new(0.5, -50, 0.3, 0)
+    nameBox.ClearTextOnFocus = false
+    nameBox.PlaceholderText = "버튼에 표시될 이름"
+    nameBox.Text = ""
+    nameBox.TextSize = 18
+    nameBox.Font = Enum.Font.SourceSans
+
+    -- 스크립트 입력 박스
+    local scriptBox = Instance.new("TextBox", screenGui)
+    scriptBox.Size = UDim2.new(0, 360, 0, 140)
+    scriptBox.Position = UDim2.new(0.5, -180, 0.4, 0)
+    scriptBox.ClearTextOnFocus = false
+    scriptBox.PlaceholderText = "버튼 클릭 시 실행할 스크립트를 여기에 작성"
+    scriptBox.TextWrapped = true
+    scriptBox.MultiLine = true
+    scriptBox.Text = ""
+    scriptBox.Font = Enum.Font.Code
+    scriptBox.TextSize = 14
+    scriptBox.TextXAlignment = Enum.TextXAlignment.Left
+    scriptBox.TextYAlignment = Enum.TextYAlignment.Top
+
+    -- 완료 버튼
+    local createBtn = Instance.new("TextButton", screenGui)
+    createBtn.Size = UDim2.new(0, 120, 0, 40)
+    createBtn.Position = UDim2.new(0.5, -135, 0.7, 0)
+    createBtn.Text = "버튼 생성"
+    createBtn.Font = Enum.Font.SourceSansBold
+    createBtn.TextSize = 22
+    createBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+    createBtn.TextColor3 = Color3.new(1,1,1)
+    createBtn.AutoButtonColor = true
+
+    -- 최종 저장 버튼 (드래그 후 저장)
+    local saveBtn = Instance.new("TextButton", screenGui)
+    saveBtn.Size = UDim2.new(0, 120, 0, 40)
+    saveBtn.Position = UDim2.new(0.5, 15, 0.7, 0)
+    saveBtn.Text = "최종 저장"
+    saveBtn.Font = Enum.Font.SourceSansBold
+    saveBtn.TextSize = 22
+    saveBtn.BackgroundColor3 = Color3.fromRGB(50, 220, 50)
+    saveBtn.TextColor3 = Color3.new(1,1,1)
+    saveBtn.AutoButtonColor = true
+
+    local createdButton = nil
+
+    createBtn.MouseButton1Click:Connect(function()
+        local btnName = nameBox.Text:match("%S") and nameBox.Text or "NewButton"
+        local scriptText = scriptBox.Text
+
+        if createdButton then
+            createdButton:Destroy()
+            createdButton = nil
+        end
+
+        createdButton = createDraggableButton(screenGui, btnName, UDim2.new(0.5, 0, 0.55, 0), scriptText)
+        createdButton.Name = btnName
+    end)
+
+    saveBtn.MouseButton1Click:Connect(function()
+        if not createdButton then
+            warn("생성된 버튼이 없습니다")
+            return
+        end
+
+        local pos = createdButton.Position
+        local name = createdButton.Name
+        local scriptText = scriptBox.Text
+
+        saveButtonDataToFile(name, pos, scriptText)
+
+        screenGui:Destroy()
+    end)
+end
+
+setupGui()
